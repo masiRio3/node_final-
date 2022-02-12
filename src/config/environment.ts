@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 
 dotenv.config()
-
+ //sin gui
 
 export const environment = {
     PORT: process.env.PORT,
