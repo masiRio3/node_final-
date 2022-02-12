@@ -2,7 +2,6 @@ import dotenv from 'dotenv';
 
 dotenv.config()
 
-//puto el que lee
 
 export const environment = {
     PORT: process.env.PORT,
