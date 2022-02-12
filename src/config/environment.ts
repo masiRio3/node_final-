@@ -1,7 +1,8 @@
 import dotenv from 'dotenv';
 
 dotenv.config()
-//puto el que lo lea
+//como estaba
+
 export const environment = {
     PORT: process.env.PORT,
     DB_HOST: process.env.DB_HOST,
