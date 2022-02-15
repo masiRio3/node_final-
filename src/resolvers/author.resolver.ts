@@ -56,7 +56,13 @@ export class AuthorResolver {
 
     @Query(() => [Author])
     async getAllAuthors(): Promise<Author[]> {
-        return await this.authorRepository.find({ relations: ['books'] });
+        return await this.authorRepository
+        // .createQueryBuilder("author")
+        // .leftJoinAndSelect("author.books", "books")
+        // .where("books.isOnLoan = isOnLoan", {isOnLoan:true}) columna no existe
+        // .getMany();
+        .find({ relations: ['books'] });
+        
     }
 
     @Query(() => Author)
@@ -99,8 +105,21 @@ export class AuthorResolver {
     async deleteOneAuthor(
         @Arg("input", () => AuthorIdInput) input: AuthorIdInput
     ): Promise<Boolean> {
-        await this.authorRepository.delete(input.id);
-        return true;
+
+        try {
+
+            const author= await this.authorRepository.findOne(input.id);
+            if (!author) throw new Error ("Author does not exist")
+            await this.authorRepository.delete(input.id);
+            return true;
+        }catch (e) {
+            throw new Error (e.message)
+        }
+
+     
+
+
+
     }
 
 }
