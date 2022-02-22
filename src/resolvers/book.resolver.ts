@@ -14,6 +14,9 @@ class BookInput {
 
     @Field()
     author!: number;
+
+    @Field(()=>String,{nullable:true,defaultValue:"false"})
+    isOnLoan!: boolean
 }
 
 @InputType()
@@ -60,7 +63,7 @@ export class BookResolver {
     @UseMiddleware(isAuth)
     async createBook(@Arg("input", () => BookInput) input: BookInput,@Ctx() context: IContext) {
         try {
-            console.log(context.payload)
+           
             const author: Author | undefined = await this.authorRepository.findOne(input.author);
 
             if (!author) {
@@ -71,7 +74,9 @@ export class BookResolver {
 
             const book = await this.bookRepository.insert({
                 title: input.title,
-                author: author
+                author: author,
+                isOnLoan: input.isOnLoan
+                
             });
 
             return await this.bookRepository.findOne(book.identifiers[0].id, { relations: ['author'] })
@@ -86,7 +91,10 @@ export class BookResolver {
     @UseMiddleware(isAuth)
     async getAllBooks(): Promise<Book[]> {
         try {
-            return await this.bookRepository.find({ relations: ['author'] })
+            return await this.bookRepository
+            
+            .find({ relations: ['author'] })
+
         } catch (e) {
             throw new Error(e)
         }

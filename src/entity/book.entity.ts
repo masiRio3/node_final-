@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, OneToOne } from 'typeorm';
 import { Author } from './author.entity';
 import { Field, ObjectType } from 'type-graphql';
 
@@ -21,4 +21,9 @@ export class Book {
     @Field()
     @CreateDateColumn({ type: 'timestamp' })
     createdAt!: string
+
+    @Field()
+    @Column({ type: "boolean",default: false })
+    isOnLoan!: boolean
+
 }

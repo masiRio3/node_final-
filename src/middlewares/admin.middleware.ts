@@ -9,17 +9,18 @@ export interface IContext {
     payload: {userId: string}
 };
 
-export const  isAuth: MiddlewareFn<IContext> = ({context}, next) =>{
+
+export const isAdmin: MiddlewareFn<IContext> = ({context}, next) =>{
 
     try {
-       const bearerToken= context.req.headers ["authorization"];
+       const adminToken= context.req.headers ["authorization"];
 
-    if (!bearerToken) {
+    if (!adminToken) {
         throw new Error ("Unauthorized")
     };
 
-        const jwt= bearerToken.split(" ") [1];
-        const payload= verify(jwt, environment.JWT_SECRET);
+        const jwt= adminToken.split(" ") [1];
+        const payload= verify(jwt, environment.JWT_ADMIN);
         context.payload=payload as any;
  
     } catch (e)  {

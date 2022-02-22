@@ -1,12 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn} from 'typeorm';
 
-import { Authorized, Field, ObjectType } from 'type-graphql';
-
-
+import { Field, ObjectType } from 'type-graphql';
 
 @ObjectType()
 @Entity()
-export class User {
+export class Admin {
 
     @Field()
     @PrimaryGeneratedColumn()
@@ -23,12 +21,6 @@ export class User {
     @Field()
     @Column()
     password!: string
-
-    @Field()
-
-    @Authorized(["admin", "user"])
-    @Column({ type: "text",default: "user"})
-    role!: string
 
     @Field()
     @CreateDateColumn({ type: 'timestamp' })

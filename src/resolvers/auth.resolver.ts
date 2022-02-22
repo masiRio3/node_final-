@@ -1,15 +1,18 @@
 import { IsEmail, Length } from "class-validator";
-import { Arg, Field, InputType, Mutation, ObjectType, Resolver } from "type-graphql";
+import { Arg, Authorized, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import { getRepository, Repository } from "typeorm";
 import { User } from "../entity/user.entity";
 import { hash, compareSync } from 'bcryptjs';
 import { sign } from "jsonwebtoken";
 import { environment } from '../config/environment';
 
+
+
 @InputType()
 class UserInput {
+ 
 
-    @Field()
+  @Field()
     @Length(3, 64)
     fullName!: string
 
@@ -33,6 +36,8 @@ class LoginInput {
     @Field()
     password!: string;
 }
+
+
 
 @ObjectType()
 class LoginResponse {
@@ -89,34 +94,59 @@ export class AuthResolver {
     async login(
         @Arg('input', () => LoginInput) input: LoginInput
     ) {
+
         try {
             const { email, password } = input;
 
-            const userFound = await this.userRepository.findOne({ where: { email } });
 
-            if (!userFound) {
-                const error = new Error();
-                error.message = 'Invalid credentials';
-                throw error;
-            }
+                const userFound = await this.userRepository.findOne({ where: { email } });
 
-            const isValidPasswd: boolean = compareSync(password, userFound.password);
 
-            if (!isValidPasswd) {
-                const error = new Error();
-                error.message = 'Invalid credentials';
-                throw error;
-            }
+                if (!userFound) {
+                    const error = new Error();
+                    error.message = 'Invalid credentials';
+                    throw error;
+                }
 
-            const jwt: string = sign({ id: userFound.id }, environment.JWT_SECRET);
 
-            return {
-                userId: userFound.id,
-                jwt: jwt,
-            }
+                const isValidPasswd: boolean = compareSync(password, userFound.password);
+
+                if (!isValidPasswd) {
+                    const error = new Error();
+                    error.message = 'Invalid credentials';
+                    throw error;
+                }
+
+
+
+                const jwt: string = sign({ id: userFound.id }, environment.JWT_SECRET);
+
+
+            if (userFound.role === "admin") 
+                console.log("Bienvenido Admin")
+              
+
+                return {
+
+                    userId:userFound.id,
+                    jwt: jwt,
+                }
+            
+            
+           
         } catch (error) {
             throw new Error(error.message)
         }
     }
+
+    @Authorized()
+    @Query()
+    authedQuery(): string {
+    return "Authorized users only!";
+  }
+
+  
+
+    
 
 }

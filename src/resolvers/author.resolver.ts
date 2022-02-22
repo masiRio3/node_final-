@@ -59,7 +59,7 @@ export class AuthorResolver {
         return await this.authorRepository
         // .createQueryBuilder("author")
         // .leftJoinAndSelect("author.books", "books")
-        // .where("books.isOnLoan = isOnLoan", {isOnLoan:true}) columna no existe
+        // .where("books.isOnLoan = isOnLoan", {isOnLoan:true}) 
         // .getMany();
         .find({ relations: ['books'] });
         
