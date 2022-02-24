@@ -24,11 +24,11 @@ export class User {
     @Column()
     password!: string
 
-    @Field()
-
+    
     @Authorized(["admin", "user"])
-    @Column({ type: "text",default: "user"})
-    role!: string
+    @Field(() => [User], { nullable: true })
+    @Column({ type: "text",default:"user"})
+    role!: string[]
 
     @Field()
     @CreateDateColumn({ type: 'timestamp' })

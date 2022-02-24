@@ -1,9 +1,10 @@
-import { Mutation, Resolver, Arg, InputType, Field, Query, UseMiddleware, Ctx } from 'type-graphql';
+import { Mutation, Resolver, Arg, InputType, Field, Query, UseMiddleware, Ctx, Authorized } from 'type-graphql';
 import { getRepository, Repository } from "typeorm";
 import { Author } from '../entity/author.entity';
 import { Book } from '../entity/book.entity';
 import { Length } from 'class-validator';
-import { IContext, isAuth } from '../middlewares/auth.middleware';
+import { IContext} from '../middlewares/auth.middleware';
+
 
 @InputType()
 class BookInput {
@@ -59,8 +60,9 @@ export class BookResolver {
         this.authorRepository = getRepository(Author);
     }
 
-    @Mutation(() => Book)
-    @UseMiddleware(isAuth)
+
+    @Authorized("admin")
+    @Mutation(() => Book)  
     async createBook(@Arg("input", () => BookInput) input: BookInput,@Ctx() context: IContext) {
         try {
            
@@ -78,6 +80,10 @@ export class BookResolver {
                 isOnLoan: input.isOnLoan
                 
             });
+        
+
+
+           
 
             return await this.bookRepository.findOne(book.identifiers[0].id, { relations: ['author'] })
 
@@ -85,10 +91,11 @@ export class BookResolver {
         } catch (e) {
             throw new Error(e.message)
         }
+        
     }
 
     @Query(() => [Book])
-    @UseMiddleware(isAuth)
+    @Authorized("user", "admin")
     async getAllBooks(): Promise<Book[]> {
         try {
             return await this.bookRepository
@@ -101,6 +108,7 @@ export class BookResolver {
     }
 
     @Query(() => Book)
+    @Authorized("user", "admin")
     async getBookById(
         @Arg('input', () => BookIdInput) input: BookIdInput
     ): Promise<Book | undefined> {
@@ -118,6 +126,7 @@ export class BookResolver {
     }
 
     @Mutation(() => Boolean)
+    @Authorized("admin")
     async updateBookById(
         @Arg('bookId', () => BookIdInput) bookId: BookIdInput,
         @Arg('input', () => BookUpdateInput) input: BookUpdateInput,
@@ -131,6 +140,7 @@ export class BookResolver {
     }
 
     @Mutation(() => Boolean)
+    @Authorized("admin")
     async deleteBook(
         @Arg("bookId", () => BookIdInput) bookId: BookIdInput
     ): Promise<Boolean> {

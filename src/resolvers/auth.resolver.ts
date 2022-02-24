@@ -1,6 +1,6 @@
 import { IsEmail, Length } from "class-validator";
 import { Arg, Authorized, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
-import { getRepository, Repository } from "typeorm";
+import { Column, getRepository, Repository } from "typeorm";
 import { User } from "../entity/user.entity";
 import { hash, compareSync } from 'bcryptjs';
 import { sign } from "jsonwebtoken";
@@ -35,6 +35,8 @@ class LoginInput {
 
     @Field()
     password!: string;
+
+    
 }
 
 
@@ -47,6 +49,11 @@ class LoginResponse {
 
     @Field()
     jwt!: string;
+
+    @Authorized(["admin", "user"])
+    @Field(() => [User], { nullable: true })
+    @Column({ type: "text",default:"user"})
+    role!: string[]
 }
 
 @Resolver()
@@ -122,7 +129,7 @@ export class AuthResolver {
                 const jwt: string = sign({ id: userFound.id }, environment.JWT_SECRET);
 
 
-            if (userFound.role === "admin") 
+            if (userFound.role === ["admin"]) 
                 console.log("Bienvenido Admin")
               
 
@@ -139,14 +146,10 @@ export class AuthResolver {
         }
     }
 
-    @Authorized()
-    @Query()
-    authedQuery(): string {
-    return "Authorized users only!";
+ 
   }
 
   
 
     
 
-}

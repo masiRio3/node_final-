@@ -1,4 +1,4 @@
-import { Mutation, Resolver, Arg, InputType, Field, Query } from 'type-graphql';
+import { Mutation, Resolver, Arg, InputType, Field, Query, Authorized } from 'type-graphql';
 import { Author } from '../entity/author.entity';
 import { getRepository, Repository } from "typeorm";
 import { Length, IsString } from 'class-validator';
@@ -42,6 +42,7 @@ export class AuthorResolver {
     }
 
     @Mutation(() => Author)
+    @Authorized("admin")
     async createAuthor(
         @Arg("input", () => AuthorInput) input: AuthorInput
     ): Promise<Author | undefined> {
@@ -55,6 +56,7 @@ export class AuthorResolver {
     }
 
     @Query(() => [Author])
+    @Authorized("admin", "user")
     async getAllAuthors(): Promise<Author[]> {
         return await this.authorRepository
         // .createQueryBuilder("author")
@@ -66,6 +68,7 @@ export class AuthorResolver {
     }
 
     @Query(() => Author)
+    @Authorized("admin", "user")
     async getOneAuthor(
         @Arg("input", () => AuthorIdInput) input: AuthorIdInput
     ): Promise<Author | undefined> {
@@ -83,6 +86,7 @@ export class AuthorResolver {
     }
 
     @Mutation(() => Author)
+    @Authorized("admin")
     async updateOneAuthor(
         @Arg("input", () => AuthorUpdateInput) input: AuthorUpdateInput
     ): Promise<Author | undefined> {
@@ -102,6 +106,7 @@ export class AuthorResolver {
     }
 
     @Mutation(() => Boolean)
+    @Authorized("admin")
     async deleteOneAuthor(
         @Arg("input", () => AuthorIdInput) input: AuthorIdInput
     ): Promise<Boolean> {
