@@ -50,7 +50,7 @@ class LoginResponse {
     @Field()
     jwt!: string;
 
-    @Authorized(["admin", "user"])
+
     @Field(() => [User], { nullable: true })
     @Column({ type: "text",default:"user"})
     role!: string[]

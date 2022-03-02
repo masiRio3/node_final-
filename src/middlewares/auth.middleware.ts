@@ -2,25 +2,34 @@ import {MiddlewareFn} from "type-graphql"
 import {verify} from "jsonwebtoken"
 import {Response, Request } from "express"
 import {environment} from "../config/environment"
-
 export interface IContext {
     req: Request,
-    res: Response, 
-    payload: {userId: string}
+    res: Response,
+    payload: 
+    {
+        userId: string,
+        role: string
+    }
+
 };
 
 export const  isAuth: MiddlewareFn<IContext> = ({context}, next) =>{
 
     try {
-       const bearerToken= context.req.headers ["authorization"];
+       const bearerTokenn= context.req.headers ["authorization"];
 
-    if (!bearerToken) {
+    if (!bearerTokenn) {
         throw new Error ("Unauthorized")
     };
 
-        const jwt= bearerToken.split(" ") [1];
+        const jwt= bearerTokenn.split(" ") [1];
         const payload= verify(jwt, environment.JWT_SECRET);
         context.payload=payload as any;
+
+        if(context.payload.role==="admin") {
+        console.log(context.payload)
+        console.log(jwt)
+    }
  
     } catch (e)  {
         throw new Error (e)

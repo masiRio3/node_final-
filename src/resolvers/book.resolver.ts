@@ -3,7 +3,8 @@ import { getRepository, Repository } from "typeorm";
 import { Author } from '../entity/author.entity';
 import { Book } from '../entity/book.entity';
 import { Length } from 'class-validator';
-import { IContext} from '../middlewares/auth.middleware';
+import { IContext, isAuth } from '../middlewares/auth.middleware';
+import { isAdmin } from '../middlewares/admin.middleware';
 
 
 @InputType()
@@ -16,7 +17,7 @@ class BookInput {
     @Field()
     author!: number;
 
-    @Field(()=>String,{nullable:true,defaultValue:"false"})
+    @Field(() => String, { nullable: true, defaultValue: "false" })
     isOnLoan!: boolean
 }
 
@@ -60,12 +61,11 @@ export class BookResolver {
         this.authorRepository = getRepository(Author);
     }
 
-
-    @Authorized("admin")
-    @Mutation(() => Book)  
-    async createBook(@Arg("input", () => BookInput) input: BookInput,@Ctx() context: IContext) {
+    @UseMiddleware(isAdmin)
+    @Mutation(() => Book)
+    async createBook(@Arg("input", () => BookInput) input: BookInput, @Ctx() context: IContext) {
         try {
-           
+
             const author: Author | undefined = await this.authorRepository.findOne(input.author);
 
             if (!author) {
@@ -78,12 +78,12 @@ export class BookResolver {
                 title: input.title,
                 author: author,
                 isOnLoan: input.isOnLoan
-                
+
             });
-        
 
 
-           
+
+
 
             return await this.bookRepository.findOne(book.identifiers[0].id, { relations: ['author'] })
 
@@ -91,16 +91,16 @@ export class BookResolver {
         } catch (e) {
             throw new Error(e.message)
         }
-        
+
     }
 
     @Query(() => [Book])
-    @Authorized("user", "admin")
+    @UseMiddleware(isAuth)
     async getAllBooks(): Promise<Book[]> {
         try {
             return await this.bookRepository
-            
-            .find({ relations: ['author'] })
+
+                .find({ relations: ['author'] })
 
         } catch (e) {
             throw new Error(e)
@@ -108,7 +108,7 @@ export class BookResolver {
     }
 
     @Query(() => Book)
-    @Authorized("user", "admin")
+  
     async getBookById(
         @Arg('input', () => BookIdInput) input: BookIdInput
     ): Promise<Book | undefined> {
@@ -126,7 +126,7 @@ export class BookResolver {
     }
 
     @Mutation(() => Boolean)
-    @Authorized("admin")
+
     async updateBookById(
         @Arg('bookId', () => BookIdInput) bookId: BookIdInput,
         @Arg('input', () => BookUpdateInput) input: BookUpdateInput,
@@ -140,7 +140,7 @@ export class BookResolver {
     }
 
     @Mutation(() => Boolean)
-    @Authorized("admin")
+
     async deleteBook(
         @Arg("bookId", () => BookIdInput) bookId: BookIdInput
     ): Promise<Boolean> {
