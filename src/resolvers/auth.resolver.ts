@@ -10,9 +10,9 @@ import { environment } from '../config/environment';
 
 @InputType()
 class UserInput {
- 
 
-  @Field()
+
+    @Field()
     @Length(3, 64)
     fullName!: string
 
@@ -36,7 +36,10 @@ class LoginInput {
     @Field()
     password!: string;
 
-    
+    @Field({ nullable: true })
+    @Column({ type: "text", default: "user" })
+    role!: string
+
 }
 
 
@@ -51,15 +54,19 @@ class LoginResponse {
     jwt!: string;
 
 
-    @Field(() => [User], { nullable: true })
-    @Column({ type: "text",default:"user"})
-    role!: string[]
+    @Field({ nullable: true })
+    @Column({ type: "text", default: "user" })
+    role!: string
 }
+
+
+export let valueRole: any
 
 @Resolver()
 export class AuthResolver {
 
     userRepository: Repository<User>;
+    
 
     constructor() {
         this.userRepository = getRepository(User);
@@ -71,7 +78,7 @@ export class AuthResolver {
     ): Promise<User | undefined> {
 
         try {
-            const { fullName, email, password } = input;
+             const { fullName, email, password } = input;
 
             const userExists = await this.userRepository.findOne({ where: { email } });
 
@@ -97,59 +104,76 @@ export class AuthResolver {
         }
     }
 
+
+    
+
     @Mutation(() => LoginResponse)
     async login(
         @Arg('input', () => LoginInput) input: LoginInput
     ) {
 
+
+
         try {
-            const { email, password } = input;
+            const { email, password, } = input;
+
+            
 
 
-                const userFound = await this.userRepository.findOne({ where: { email } });
+             const userFound = await this.userRepository.findOne({ where: { email } });
+
+             console.log(userFound)
+             
+
+            if (!userFound) {
+                const error = new Error();
+                error.message = 'Invalid credentials';
+                throw error;
+            }
 
 
-                if (!userFound) {
-                    const error = new Error();
-                    error.message = 'Invalid credentials';
-                    throw error;
-                }
+            const isValidPasswd: boolean = compareSync(password, userFound.password);
 
-
-                const isValidPasswd: boolean = compareSync(password, userFound.password);
-
-                if (!isValidPasswd) {
-                    const error = new Error();
-                    error.message = 'Invalid credentials';
-                    throw error;
-                }
+            if (!isValidPasswd) {
+                const error = new Error();
+                error.message = 'Invalid credentials';
+                throw error;
+            }
 
 
 
-                const jwt: string = sign({ id: userFound.id }, environment.JWT_SECRET);
+            const jwt: string = sign({ id: userFound.id }, environment.JWT_SECRET);
 
 
-            if (userFound.role === ["admin"]) 
-                console.log("Bienvenido Admin")
+            if (userFound.role === "admin") {
+                console.log("Bienvenido Admin");
+                
+                valueRole as string;
+                valueRole=userFound.role;
+            }
+            
+            return  {
+
+                userId: userFound.id,
+                jwt: jwt,
+                role: userFound.role,
+
               
-
-                return {
-
-                    userId:userFound.id,
-                    jwt: jwt,
-                }
-            
-            
+                
+            }
            
+
+
+
         } catch (error) {
             throw new Error(error.message)
         }
     }
 
- 
-  }
-
-  
-
     
+}
+
+
+
+
 

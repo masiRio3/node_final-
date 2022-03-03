@@ -2,6 +2,8 @@ import {MiddlewareFn} from "type-graphql"
 import {verify} from "jsonwebtoken"
 import {Response, Request } from "express"
 import {environment} from "../config/environment"
+import { User } from "../entity/user.entity"
+
 export interface IContext {
     req: Request,
     res: Response,
@@ -23,13 +25,14 @@ export const  isAuth: MiddlewareFn<IContext> = ({context}, next) =>{
     };
 
         const jwt= bearerTokenn.split(" ") [1];
-        const payload= verify(jwt, environment.JWT_SECRET);
+
+        const payload= verify(jwt,  environment.JWT_SECRET);
         context.payload=payload as any;
 
-        if(context.payload.role==="admin") {
+       
         console.log(context.payload)
-        console.log(jwt)
-    }
+        // console.log(jwt)
+    
  
     } catch (e)  {
         throw new Error (e)

@@ -1,8 +1,10 @@
 import { MiddlewareFn } from "type-graphql"
 import { verify } from "jsonwebtoken"
-import { Response, Request } from "express"
 import { environment } from "../config/environment"
 import { IContext } from "./auth.middleware"
+import {AuthResolver, valueRole} from "../resolvers/auth.resolver"
+import { User } from "../entity/user.entity"
+
 
 // export interface IContext {
 //     req: Request,
@@ -16,7 +18,12 @@ import { IContext } from "./auth.middleware"
 // };
 
 
-export const isAdmin: MiddlewareFn<IContext> = ({context }, next) => {
+
+
+
+export const isAdmin: MiddlewareFn<IContext> = ({context  }, next) => {
+
+
 
     try {
         const bearerToken = context.req.headers["authorization"];
@@ -25,11 +32,12 @@ export const isAdmin: MiddlewareFn<IContext> = ({context }, next) => {
         if (!bearerToken) {
             throw new Error("Unauthorized")
         };
-        console.log(context.payload);
+       
     
-        if (context.payload.role==="admin") {
+        if (valueRole==="admin") {
             
             const jwt = bearerToken.split(" ")[1];
+           
             const payload = verify(jwt, environment.JWT_SECRET);
             context.payload = payload as any;
         } else {

@@ -24,9 +24,9 @@ export class User {
     @Column()
     password!: string
 
-    @Field(() => [User], { nullable: true })
+    @Field( { nullable: true })
     @Column({ type: "text",default:"user"})
-    role!: string[]
+    role!: string
 
     @Field()
     @CreateDateColumn({ type: 'timestamp' })
