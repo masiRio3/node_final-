@@ -68,7 +68,7 @@ class BookIdInput {
     id!: number
 }
 
-let totalLoans
+let totalLoans:number;
 
 @Resolver()
 export class BookResolver {
@@ -178,6 +178,7 @@ export class BookResolver {
 
             
         })
+        
         return await this.bookRepository.findOne(updatedBook.id)
     }
 
