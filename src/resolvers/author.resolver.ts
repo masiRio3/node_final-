@@ -1,7 +1,9 @@
-import { Mutation, Resolver, Arg, InputType, Field, Query, Authorized } from 'type-graphql';
+import { Mutation, Resolver, Arg, InputType, Field, Query, Authorized, UseMiddleware } from 'type-graphql';
 import { Author } from '../entity/author.entity';
 import { getRepository, Repository } from "typeorm";
 import { Length, IsString } from 'class-validator';
+import { isAdmin } from '../middlewares/admin.middleware';
+import { isAuth } from '../middlewares/auth.middleware';
 
 
 
@@ -18,7 +20,6 @@ class AuthorInput {
 class AuthorUpdateInput {
 
     @Field(() => Number)
-    @Length(3, 64)
     id!: number
 
     @Field()
@@ -42,7 +43,7 @@ export class AuthorResolver {
     }
 
     @Mutation(() => Author)
-
+    @UseMiddleware(isAdmin)
     async createAuthor(
         @Arg("input", () => AuthorInput) input: AuthorInput
     ): Promise<Author | undefined> {
@@ -56,7 +57,7 @@ export class AuthorResolver {
     }
 
     @Query(() => [Author])
-
+    @UseMiddleware(isAdmin,isAuth)
     async getAllAuthors(): Promise<Author[]> {
         return await this.authorRepository
         // .createQueryBuilder("author")
@@ -68,7 +69,7 @@ export class AuthorResolver {
     }
 
     @Query(() => Author)
-
+    @UseMiddleware(isAdmin,isAuth)
     async getOneAuthor(
         @Arg("input", () => AuthorIdInput) input: AuthorIdInput
     ): Promise<Author | undefined> {
@@ -86,7 +87,7 @@ export class AuthorResolver {
     }
 
     @Mutation(() => Author)
-
+    @UseMiddleware(isAdmin)
     async updateOneAuthor(
         @Arg("input", () => AuthorUpdateInput) input: AuthorUpdateInput
     ): Promise<Author | undefined> {
@@ -106,7 +107,7 @@ export class AuthorResolver {
     }
 
     @Mutation(() => Boolean)
-
+    @UseMiddleware(isAdmin)
     async deleteOneAuthor(
         @Arg("input", () => AuthorIdInput) input: AuthorIdInput
     ): Promise<Boolean> {

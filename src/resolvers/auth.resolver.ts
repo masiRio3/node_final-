@@ -62,6 +62,8 @@ class LoginResponse {
 
 export let valueRole: any
 
+
+
 @Resolver()
 export class AuthResolver {
 
@@ -112,18 +114,10 @@ export class AuthResolver {
         @Arg('input', () => LoginInput) input: LoginInput
     ) {
 
-
-
         try {
             const { email, password, } = input;
 
-            
-
-
              const userFound = await this.userRepository.findOne({ where: { email } });
-
-             console.log(userFound)
-             
 
             if (!userFound) {
                 const error = new Error();
@@ -141,37 +135,31 @@ export class AuthResolver {
             }
 
 
-
             const jwt: string = sign({ id: userFound.id }, environment.JWT_SECRET);
 
+            
 
-            if (userFound.role === "admin") {
-                console.log("Bienvenido Admin");
-                
                 valueRole as string;
                 valueRole=userFound.role;
-            }
             
             return  {
 
                 userId: userFound.id,
                 jwt: jwt,
-                role: userFound.role,
-
-              
+                role: userFound.role, 
                 
             }
            
 
 
-
         } catch (error) {
             throw new Error(error.message)
         }
+        
     }
 
-    
-}
+
+} 
 
 
 

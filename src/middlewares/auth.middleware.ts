@@ -25,6 +25,7 @@ export const  isAuth: MiddlewareFn<IContext> = ({context}, next) =>{
     };
 
         const jwt= bearerTokenn.split(" ") [1];
+    
 
         const payload= verify(jwt,  environment.JWT_SECRET);
         context.payload=payload as any;

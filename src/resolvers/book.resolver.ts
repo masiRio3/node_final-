@@ -5,10 +5,13 @@ import { Book } from '../entity/book.entity';
 import { Length } from 'class-validator';
 import { IContext, isAuth } from '../middlewares/auth.middleware';
 import { isAdmin } from '../middlewares/admin.middleware';
+import { title } from 'process';
 
 
 @InputType()
 class BookInput {
+
+    
 
     @Field()
     @Length(3, 64)
@@ -19,6 +22,21 @@ class BookInput {
 
     @Field(() => String, { nullable: true, defaultValue: "false" })
     isOnLoan!: boolean
+}
+
+@InputType ()
+class BookLoanInput {
+
+    @Field(() => Number)
+    id!: number
+
+    @Field(() => String, { nullable: true })
+    @Length(3, 64)
+    title?: string;
+
+    @Field(() => Boolean, { nullable: true, defaultValue: false })
+    isOnLoan?: boolean
+
 }
 
 @InputType()
@@ -50,6 +68,7 @@ class BookIdInput {
     id!: number
 }
 
+let totalLoans
 
 @Resolver()
 export class BookResolver {
@@ -82,9 +101,6 @@ export class BookResolver {
             });
 
 
-
-
-
             return await this.bookRepository.findOne(book.identifiers[0].id, { relations: ['author'] })
 
 
@@ -95,7 +111,7 @@ export class BookResolver {
     }
 
     @Query(() => [Book])
-    @UseMiddleware(isAuth)
+    @UseMiddleware(isAuth, isAdmin)
     async getAllBooks(): Promise<Book[]> {
         try {
             return await this.bookRepository
@@ -108,7 +124,7 @@ export class BookResolver {
     }
 
     @Query(() => Book)
-  
+    @UseMiddleware(isAuth, isAdmin)
     async getBookById(
         @Arg('input', () => BookIdInput) input: BookIdInput
     ): Promise<Book | undefined> {
@@ -126,7 +142,7 @@ export class BookResolver {
     }
 
     @Mutation(() => Boolean)
-
+    @UseMiddleware(isAdmin)
     async updateBookById(
         @Arg('bookId', () => BookIdInput) bookId: BookIdInput,
         @Arg('input', () => BookUpdateInput) input: BookUpdateInput,
@@ -139,8 +155,37 @@ export class BookResolver {
         }
     }
 
-    @Mutation(() => Boolean)
 
+    @Mutation(() => Book)
+    //@UseMiddleware(isAdmin)
+    async loanBook(
+        @Arg("input", () => BookLoanInput) input: BookLoanInput
+    ): Promise <Book | undefined> {
+        const bookExists = await this.bookRepository.findOne(input.id);
+
+        if (!bookExists) {
+            throw new Error('Book does not exists')
+        };
+
+        if (bookExists.isOnLoan===true) {
+            throw new Error('the book is already borrowed')
+        }
+
+        const updatedBook = await this.bookRepository.save({
+            id: input.id,
+            isOnLoan:true, 
+            title:input.title
+
+            
+        })
+        return await this.bookRepository.findOne(updatedBook.id)
+    }
+
+
+
+
+    @Mutation(() => Boolean)
+    @UseMiddleware(isAdmin)
     async deleteBook(
         @Arg("bookId", () => BookIdInput) bookId: BookIdInput
     ): Promise<Boolean> {
@@ -151,6 +196,8 @@ export class BookResolver {
             throw new Error(e)
         }
     }
+
+   
 
     private async parseInput(input: BookUpdateInput) {
         try {
@@ -173,5 +220,8 @@ export class BookResolver {
             throw new Error(e)
         }
     }
+
+
+    
 
 }
